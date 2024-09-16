@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOLO Antennas Detection</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #result { margin-top: 20px; }
+        #detections { margin-top: 10px; }
+        img { max-width: 100%; height: auto; }
+    </style>
+</head>
+<body>
+    <h1>YOLO Antennas Detection</h1>
+    <p>Upload an image, and the model will detect objects in it.</p>
+    
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" id="image-input" name="image" accept="image/*" required>
+        <button type="submit">Upload and Detect</button>
+    </form>
+    
+    <div id="result">
+        <h3>Detection Result</h3>
+        <img id="result-image" src="" alt="Result Image">
+        <div id="detections"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('upload-form');
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            const formData = new FormData();
+            const imageFile = document.getElementById('image-input').files[0];
+            formData.append('image', imageFile);
+            
+            const response = await fetch('/detect', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            if (result.error) {
+                alert(result.error);
+                return;
+            }
+
+            // Display the result image and detections
+            document.getElementById('result-image').src = result.result_image;
+            const detectionsDiv = document.getElementById('detections');
+            detectionsDiv.innerHTML = `<p>Total Objects Detected: ${result.total_objects}</p>`;
+            result.detections.forEach(d => {
+                detectionsDiv.innerHTML += `<p>Class: ${d.class}, Count: ${d.count}</p>`;
+            });
+        });
+    </script>
+</body>
+</html>
